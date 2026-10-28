@@ -1,15 +1,16 @@
-// Licensed under the Dartastic Pro Software License Agreement.
+// Licensed under the Apache License, Version 2.0
 // Copyright 2025-2026 Mindful Software LLC d/b/a Dartastic.io, All rights reserved.
 
-import 'package:dartastic_opentelemetry/dartastic_opentelemetry.dart';
+import 'package:dartastic_opentelemetry_api/dartastic_opentelemetry_api.dart';
 
 import 'otel_gorgias_suppression.dart';
 
 const _tracerName = 'dartastic_otel_libs_gorgias';
 
-Tracer _tracer() => OTel.tracerProvider().getTracer(_tracerName);
+APITracer _tracer() => OTelAPI.tracerProvider().getTracer(_tracerName);
 
 class GorgiasResult {
+  /// Creates a result.
   const GorgiasResult({
     this.itemCount,
     this.total,
@@ -65,8 +66,13 @@ class GorgiasResult {
   final int? statusCode;
 }
 
+/// What a traced call returned: the value for the caller plus fields
+/// recorded on the span.
 class GorgiasCallResult<T> {
+  /// Creates a call result.
   const GorgiasCallResult({required this.value, this.result});
+
+  /// The value returned to the caller.
   final T value;
   final GorgiasResult? result;
 }
@@ -95,80 +101,80 @@ Future<T> tracedGorgias<T>({
   final span = _tracer().startSpan(
     'gorgias $operation',
     kind: SpanKind.client,
-    attributes: OTel.attributesFromMap(m),
+    attributes: OTelAPI.attributesFromMap(m),
   );
   try {
     final r = await invoke();
     if (r.result != null) {
       final extras = <Attribute<Object>>[];
       if (r.result!.itemCount != null) {
-        extras.add(OTel.attributeInt(
+        extras.add(OTelAPI.attributeInt(
           'gorgias.item_count',
           r.result!.itemCount!,
         ));
       }
       if (r.result!.total != null) {
-        extras.add(OTel.attributeInt(
+        extras.add(OTelAPI.attributeInt(
           'gorgias.total',
           r.result!.total!,
         ));
       }
       if (r.result!.channel != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'gorgias.channel',
           r.result!.channel!,
         ));
       }
       if (r.result!.status != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'gorgias.ticket.status',
           r.result!.status!,
         ));
       }
       if (r.result!.priority != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'gorgias.ticket.priority',
           r.result!.priority!,
         ));
       }
       if (r.result!.autoRespondedBy != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'gorgias.auto_responded_by',
           r.result!.autoRespondedBy!,
         ));
       }
       if (r.result!.integrationKind != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'gorgias.integration.kind',
           r.result!.integrationKind!,
         ));
       }
       if (r.result!.orderRevenueMinor != null) {
-        extras.add(OTel.attributeInt(
+        extras.add(OTelAPI.attributeInt(
           'gorgias.order.revenue.minor',
           r.result!.orderRevenueMinor!,
         ));
       }
       if (r.result!.currency != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'gorgias.currency',
           r.result!.currency!,
         ));
       }
       if (r.result!.rateLimitRemaining != null) {
-        extras.add(OTel.attributeInt(
+        extras.add(OTelAPI.attributeInt(
           'gorgias.rate_limit.remaining',
           r.result!.rateLimitRemaining!,
         ));
       }
       if (r.result!.requestId != null) {
-        extras.add(OTel.attributeString(
+        extras.add(OTelAPI.attributeString(
           'gorgias.request.id',
           r.result!.requestId!,
         ));
       }
       if (r.result!.statusCode != null) {
-        extras.add(OTel.attributeInt(
+        extras.add(OTelAPI.attributeInt(
           'http.response.status_code',
           r.result!.statusCode!,
         ));
@@ -179,13 +185,13 @@ Future<T> tracedGorgias<T>({
           );
         }
       }
-      if (extras.isNotEmpty) span.addAttributes(OTel.attributes(extras));
+      if (extras.isNotEmpty) span.addAttributes(OTelAPI.attributes(extras));
     }
     return r.value;
   } catch (e, st) {
-    span.addAttributes(OTel.attributes([
-      OTel.attributeString(
-        ErrorResource.errorType.key,
+    span.addAttributes(OTelAPI.attributes([
+      OTelAPI.attributeString(
+        ErrorAttributes.errorType.key,
         e.runtimeType.toString(),
       ),
     ]));
